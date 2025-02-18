@@ -2,6 +2,9 @@ defmodule MembraneError.Pipelines.GoodPipeline do
   use Membrane.Pipeline
   require Logger
 
+  # Switch the handle_new_client callback in application.ex to use this pipeline
+  #
+  # 
   # Example ffmpeg command to start a stream:
   # ffmpeg -re -i ./sample.mp4 -c copy -f flv "rtmp://localhost:5001/super_account/super_key"
   #
@@ -10,7 +13,7 @@ defmodule MembraneError.Pipelines.GoodPipeline do
 
   @super_secret_rtmp_url "rtmp://a.rtmp.youtube.com/live2/r14q-4gss-c3zj-m5ps-7ddm"
 
-  
+
 
   def handle_new_client(client_ref, username, stream_key) do
     Logger.info("""

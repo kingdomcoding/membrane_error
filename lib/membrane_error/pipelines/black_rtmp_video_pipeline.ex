@@ -2,6 +2,9 @@ defmodule MembraneError.Pipelines.BlackRtmpVideoPipeline do
   use Membrane.Pipeline
   require Logger
 
+  # Switch the handle_new_client callback in application.ex to use this pipeline
+  #
+  # 
   # Example ffmpeg command to start a stream:
   # ffmpeg -re -i ./sample.mp4 -c copy -f flv "rtmp://localhost:5001/super_account/super_key"
   #
