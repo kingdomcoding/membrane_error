@@ -1,12 +1,15 @@
-defmodule MembraneError.Pipelines.GoodPipeline do
+defmodule MembraneError.Pipelines.BlackRtmpVideoPipeline do
   use Membrane.Pipeline
   require Logger
 
   # Example ffmpeg command to start a stream:
   # ffmpeg -re -i ./sample.mp4 -c copy -f flv "rtmp://localhost:5001/super_account/super_key"
+  #
+  #
+  # NOTE: This uses sends a message to attact the rtmp sink
+  # The rtmp destination seems to receive no data and shows a black screen
 
   @super_secret_rtmp_url "rtmp://a.rtmp.youtube.com/live2/r14q-4gss-c3zj-m5ps-7ddm"
-
 
   def handle_new_client(client_ref, username, stream_key) do
     Logger.info("""
@@ -15,13 +18,16 @@ defmodule MembraneError.Pipelines.GoodPipeline do
 
     preview_video_hls_file = "./tmp/stream/preview_video/index.m3u8"
 
-    Membrane.Pipeline.start_link(__MODULE__,
-      %{
-        client_ref: client_ref,
-        preview_video_hls_dir: Path.dirname(preview_video_hls_file),
-        preview_video_hls_manifest_name: Path.basename(preview_video_hls_file, ".m3u8"),
-      }
-    )
+    {:ok, _supervisor_pid, pipeline_pid} =
+      Membrane.Pipeline.start_link(__MODULE__,
+        %{
+          client_ref: client_ref,
+          preview_video_hls_dir: Path.dirname(preview_video_hls_file),
+          preview_video_hls_manifest_name: Path.basename(preview_video_hls_file, ".m3u8"),
+        }
+      )
+
+    Process.send(pipeline_pid, :add_rtmp_sink, [])
 
     {Membrane.RTMP.Source.ClientHandlerImpl, []}
   end
@@ -73,7 +79,11 @@ defmodule MembraneError.Pipelines.GoodPipeline do
         | spec
       ]
 
+    {[spec: spec], %{}}
+  end
 
+  @impl true
+  def handle_info(:add_rtmp_sink, _ctx, state) do
     spec = [
       child(:rtmp_sink_bin, %Membrane.RTMP.Sink{
         rtmp_url: @super_secret_rtmp_url,
@@ -87,9 +97,8 @@ defmodule MembraneError.Pipelines.GoodPipeline do
       get_child(:video_tee)
       |> via_in(Pad.ref(:video, 0))
       |> get_child(:rtmp_sink_bin)
-      | spec
     ]
 
-    {[spec: spec], %{}}
+    {[spec: spec], state}
   end
 end

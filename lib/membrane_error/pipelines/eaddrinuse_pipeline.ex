@@ -4,9 +4,13 @@ defmodule MembraneError.Pipelines.GoodPipeline do
 
   # Example ffmpeg command to start a stream:
   # ffmpeg -re -i ./sample.mp4 -c copy -f flv "rtmp://localhost:5001/super_account/super_key"
+  #
+  #
+  # NOTE: This uses Membrane.Tee.PushOutput. To watch it fail, start a stream then turn off your wifi
 
   @super_secret_rtmp_url "rtmp://a.rtmp.youtube.com/live2/r14q-4gss-c3zj-m5ps-7ddm"
 
+  
 
   def handle_new_client(client_ref, username, stream_key) do
     Logger.info("""
@@ -35,11 +39,11 @@ defmodule MembraneError.Pipelines.GoodPipeline do
 
       get_child(:rtmp_source)
       |> via_out(:audio)
-      |> child(:audio_tee, Membrane.Tee.Parallel),
+      |> child(:audio_tee, Membrane.Tee.PushOutput),
 
       get_child(:rtmp_source)
       |> via_out(:video)
-      |> child(:video_tee, Membrane.Tee.Parallel),
+      |> child(:video_tee, Membrane.Tee.PushOutput),
     ]
 
     spec =

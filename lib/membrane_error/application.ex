@@ -32,6 +32,8 @@ defmodule MembraneError.Application do
       port: 5001,
       use_ssl?: false,
       handle_new_client: &MembraneError.Pipelines.GoodPipeline.handle_new_client/3
+      # handle_new_client: &MembraneError.Pipelines.BlackRtmpVideoPipeline.handle_new_client/3
+      # handle_new_client: &MembraneError.Pipelines.EaddrinusePipeline.handle_new_client/3
     ]}
   end
 
